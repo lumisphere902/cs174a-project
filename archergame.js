@@ -62,7 +62,33 @@ class Base_Scene extends Scene {
     }
 }
 
-export class Assignment2 extends Base_Scene {
+class Actor {
+    constructor(x, y, scale, material, dx, dy) {
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+        this.material = material;
+        this.dx = dx;
+        this.dy = dy;
+    }
+
+    draw(context, program_state) {
+        let model_transform = Mat4.identity();
+        model_transform = model_transform
+        .times(Mat4.translation(this.x, this.y, 0))
+        .times(Mat4.scale(this.scale, this.scale, 1));
+        return [model_transform, this.material]
+    }
+
+    // Call once per frame
+    update(context, program_state) {
+        this.x += this.dx;
+        this.y += this.dy;
+        return this.draw(context, program_state);
+    }
+}
+
+export class ArcherGame extends Base_Scene {
     /**
      * This Scene object can be added to any display canvas.
      * We isolate that code so it can be experimented with on its own.
@@ -75,6 +101,9 @@ export class Assignment2 extends Base_Scene {
         this.num_boxes = 8;
         this.sit_still = false;
         this.draw_outline = false;
+        this.archer = new Actor(-20, 0, 5, this.materials.plastic.override({color: hex_color("#ff0000")}), 0, 0);
+        this.target = new Actor(20, 0, 10, this.materials.plastic.override({color: hex_color("#00ff00")}), 0, 0);
+        this.arrow = new Actor(-20, 0, 2, this.materials.plastic.override({color: hex_color("#0000ff")}), 0.1, 0);
 
         // this.set_colors();
     }
@@ -125,8 +154,12 @@ export class Assignment2 extends Base_Scene {
         super.display(context, program_state);
         const blue = hex_color("#1a9ffa");
         let model_transform = Mat4.identity();
+        // this.archer.update(context, program_state);
+        // this.target.update(context, program_state);
         // Example for drawing a cube, you can remove this line if needed
         // TODO:  Draw your entire scene here.  Use this.draw_box( graphics_state, model_transform ) to call your helper.
-        // this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({color}));            
+        this.shapes.cube.draw(context, program_state, ...this.archer.update(context, program_state));            
+        this.shapes.cube.draw(context, program_state, ...this.target.update(context, program_state));            
+        this.shapes.cube.draw(context, program_state, ...this.arrow.update(context, program_state));            
     }
 }

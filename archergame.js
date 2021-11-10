@@ -1,4 +1,4 @@
-import {defs, tiny} from './examples/common.js';
+import { defs, tiny } from './examples/common.js';
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -39,7 +39,11 @@ class Base_Scene extends Scene {
         // *** Materials
         this.materials = {
             plastic: new Material(new defs.Phong_Shader(),
-                {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
+                {
+                    ambient: .4,
+                    diffusivity: .6,
+                    color: hex_color("#ffffff")
+                }),
         };
     }
 
@@ -51,7 +55,7 @@ class Base_Scene extends Scene {
         if (!context.scratchpad.controls) {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(Mat4.translation(5, -10, -30));
+            program_state.set_camera(Mat4.look_at(vec3(0, 0, 80), vec3(0, 0, 0), vec3(0, 1, 0)));
         }
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, 1, 100);
@@ -63,20 +67,21 @@ class Base_Scene extends Scene {
 }
 
 class Actor {
-    constructor(x, y, scale, material, dx, dy) {
+    constructor(x, y, scale, material, dx, dy, zscale) {
         this.x = x;
         this.y = y;
         this.scale = scale;
         this.material = material;
         this.dx = dx;
         this.dy = dy;
+        this.zscale = zscale || 1;
     }
 
     draw(context, program_state) {
         let model_transform = Mat4.identity();
         model_transform = model_transform
-        .times(Mat4.translation(this.x, this.y, 0))
-        .times(Mat4.scale(this.scale, this.scale, 1));
+            .times(Mat4.translation(this.x, this.y, 0))
+            .times(Mat4.scale(this.scale, this.scale, this.zscale));
         return [model_transform, this.material]
     }
 
@@ -101,65 +106,43 @@ export class ArcherGame extends Base_Scene {
         this.num_boxes = 8;
         this.sit_still = false;
         this.draw_outline = false;
-        this.archer = new Actor(-20, 0, 5, this.materials.plastic.override({color: hex_color("#ff0000")}), 0, 0);
-        this.target = new Actor(20, 0, 10, this.materials.plastic.override({color: hex_color("#00ff00")}), 0, 0);
-        this.arrow = new Actor(-20, 0, 2, this.materials.plastic.override({color: hex_color("#0000ff")}), 0.1, 0);
-
-        // this.set_colors();
+        this.archer = new Actor(-20, 5, 5, this.materials.plastic.override({
+            color: hex_color("#ff0000")
+        }), 0, 0);
+        this.target = new Actor(20, 10, 10, this.materials.plastic.override({
+            color: hex_color("#00ff00")
+        }), 0, 0);
+        this.ground = new Actor(0, -100, 100, this.materials.plastic.override({
+            color: hex_color("#964b00")
+        }), 0, 0, 1.1);
     }
-    // set_colors() {
-    //     // TODO:  Create a class member variable to store your cube's colors.
-    //     // Hint:  You might need to create a member variable at somewhere to store the colors, using `this`.
-    //     // Hint2: You can consider add a constructor for class Assignment2, or add member variables in Base_Scene's constructor.
-    //     this.colors = [];
-    //     for (let i = 0; i < this.num_boxes; i++) {
-    //         this.colors[i] = color(Math.random(), Math.random(), Math.random(), 1.0);
-    //     }
-    // }
 
     make_control_panel() {
-        // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        // this.key_triggered_button("Change Colors", ["c"], this.set_colors);
-        // // Add a button for controlling the scene.
-        // this.key_triggered_button("Outline", ["o"], () => {
-        //     // TODO:  Requirement 5b:  Set a flag here that will toggle your outline on and off
-        //     this.draw_outline = !this.draw_outline;
-        // });
-        // this.key_triggered_button("Sit still", ["m"], () => {
-        //     // TODO:  Requirement 3d:  Set a flag here that will toggle your swaying motion on and off.
-        //     this.sit_still = !this.sit_still;
-        // });
+        // shoot
+        this.key_triggered_button("Shoot", ["c"], this.shootProjectile);
     }
 
-    // draw_box(context, program_state, model_transform, color, idx) {
-    //     // TODO:  Helper function for requirement 3 (see hint).
-    //     //        This should make changes to the model_transform matrix, draw the next box, and return the newest model_transform.
-    //     // Hint:  You can add more parameters for this function, like the desired color, index of the box, etc.
-    //     const t = this.t = program_state.animation_time;
-    //     const angle = this.sit_still ? .05 * Math.PI : (0.025 + 0.025 * Math.sin(Math.PI / 1000 * t))* Math.PI;
-    //     if (idx !== 0) {
-    //         model_transform = model_transform
-    //         .times(Mat4.translation(-1, 1, 0))
-    //         .times(Mat4.rotation(angle, 0, 0, 1))
-    //         .times(Mat4.translation(1, 1, 0));
-    //     } else {
-    //         model_transform = model_transform
-    //         .times(Mat4.scale(1, 1.5, 1));
-    //     }
+    shootProjectile() {
+        if (!this.projectile) {
+            this.projectile = new Actor(this.archer.x, this.archer.y, 2,
+                this.materials.plastic.override({
+                    color: hex_color("#0000ff")
+                }), 0.1, 0);
+        }
+    }
 
-    //     return model_transform;
-    // }
+    drawObjects(context, program_state) {
+        this.shapes.cube.draw(context, program_state, ...this.archer.update(context, program_state));
+        this.shapes.cube.draw(context, program_state, ...this.ground.update(context, program_state));
+        this.shapes.cube.draw(context, program_state, ...this.target.update(context, program_state));
+        if (this.projectile) {
+            this.shapes.cube.draw(context, program_state, ...this.projectile.update(context, program_state));
+        }
+    }
 
     display(context, program_state) {
         super.display(context, program_state);
-        const blue = hex_color("#1a9ffa");
-        let model_transform = Mat4.identity();
-        // this.archer.update(context, program_state);
-        // this.target.update(context, program_state);
-        // Example for drawing a cube, you can remove this line if needed
-        // TODO:  Draw your entire scene here.  Use this.draw_box( graphics_state, model_transform ) to call your helper.
-        this.shapes.cube.draw(context, program_state, ...this.archer.update(context, program_state));            
-        this.shapes.cube.draw(context, program_state, ...this.target.update(context, program_state));            
-        this.shapes.cube.draw(context, program_state, ...this.arrow.update(context, program_state));            
+
+        this.drawObjects(context, program_state);
     }
 }

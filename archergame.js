@@ -4,6 +4,11 @@ const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Matrix, Mat4, Light, Shape, Material, Scene,
 } = tiny;
 
+//variables
+let angle = 45;
+let speed = 40;
+let t;
+
 class Cube extends Shape {
     constructor() {
         super("position", "normal",);
@@ -50,13 +55,14 @@ class Base_Scene extends Scene {
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
-
+        
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
         if (!context.scratchpad.controls) {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
             program_state.set_camera(Mat4.look_at(vec3(0, 0, 80), vec3(0, 0, 0), vec3(0, 1, 0)));
         }
+        
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, 1, 100);
 
@@ -66,7 +72,7 @@ class Base_Scene extends Scene {
     }
 }
 
-class Actor {
+class Element {
     constructor(x, y, scale, material, dx, dy, zscale) {
         this.x = x;
         this.y = y;
@@ -87,11 +93,54 @@ class Actor {
 
     // Call once per frame
     update(context, program_state) {
-        this.x += this.dx;
-        this.y += this.dy;
+        //const dx = (speed/100) * Math.cos(angle);
+        //const dy = (speed/100) * Math.sin(angle) - 9.81*t;
+        //this.dy -= .41
+//         console.log("dy: "+ this.dy)
+//         console.log("dx: "+ this.dx)
+//            t = program_state.animation_time / 1000;
+//         this.x += this.dx;
+//         this.y += this.dy;
         return this.draw(context, program_state);
     }
 }
+
+class Projectile {
+    constructor(x, y, scale, material, dx, dy, zscale) {
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+        this.material = material;
+        this.dx = dx;
+        this.dy = dy;
+        this.zscale = zscale || 1;
+    }
+
+    draw(context, program_state) {
+        let model_transform = Mat4.identity();
+        model_transform = model_transform
+            .times(Mat4.translation(this.x, this.y, 0))
+            .times(Mat4.scale(this.scale, this.scale, this.zscale));
+        return [model_transform, this.material]
+    }
+
+    // Call once per frame
+    update(context, program_state) {
+        //const dx = (speed/100) * Math.cos(angle);
+        //const dy = (speed/100) * Math.sin(angle) - 9.81*t;
+        
+
+        if(this.y>0) {
+          this.dy -= .00861
+          console.log("dy: "+ this.dy)
+          this.x += this.dx;
+          this.y += this.dy;  
+        }
+        
+        return this.draw(context, program_state);
+    }
+}
+
 
 export class ArcherGame extends Base_Scene {
     /**
@@ -106,13 +155,17 @@ export class ArcherGame extends Base_Scene {
         this.num_boxes = 8;
         this.sit_still = false;
         this.draw_outline = false;
-        this.archer = new Actor(-20, 5, 5, this.materials.plastic.override({
+        //    constructor(x, y, scale, material, dx, dy, zscale)
+        this.origin = new Element(0, 0, 1, this.materials.plastic.override({
+            color: hex_color("#ffffff")
+        }), 0, 0);
+        this.archer = new Element(-20, 2.5, 5, this.materials.plastic.override({
             color: hex_color("#ff0000")
         }), 0, 0);
-        this.target = new Actor(20, 10, 10, this.materials.plastic.override({
+        this.target = new Element(20, .5, 3, this.materials.plastic.override({
             color: hex_color("#00ff00")
         }), 0, 0);
-        this.ground = new Actor(0, -100, 100, this.materials.plastic.override({
+        this.ground = new Element(0, -102.5, 100, this.materials.plastic.override({
             color: hex_color("#964b00")
         }), 0, 0, 1.1);
     }
@@ -120,18 +173,27 @@ export class ArcherGame extends Base_Scene {
     make_control_panel() {
         // shoot
         this.key_triggered_button("Shoot", ["c"], this.shootProjectile);
+        this.key_triggered_button("Decrease angle", ["j"], () => {angle--; console.log(angle)});
+        this.key_triggered_button("Increase angle", ["l"], () => {angle++; console.log(angle)});
+        this.key_triggered_button("Decrease speed", ["u"], () => {speed--; console.log(speed)});
+        this.key_triggered_button("Increase speed", ["o"], () => {speed++; console.log(speed)});
     }
+
+    //this.dx = (speed/100) * Math.cos(angle);
+    //this.dy = (speed/100) * Math.sin(angle) - 9.81*t;
 
     shootProjectile() {
         if (!this.projectile) {
-            this.projectile = new Actor(this.archer.x, this.archer.y, 2,
+            this.projectile = new Projectile(this.archer.x, this.archer.y, 2,
                 this.materials.plastic.override({
                     color: hex_color("#0000ff")
-                }), 0.1, 0);
+                }),  0.2+(speed/100) * Math.cos(angle*Math.PI/180), 0.2+(speed/100) * Math.sin(angle*Math.PI/180));
+
         }
     }
 
     drawObjects(context, program_state) {
+        //this.shapes.cube.draw(context, program_state, ...this.origin.update(context, program_state));
         this.shapes.cube.draw(context, program_state, ...this.archer.update(context, program_state));
         this.shapes.cube.draw(context, program_state, ...this.ground.update(context, program_state));
         this.shapes.cube.draw(context, program_state, ...this.target.update(context, program_state));

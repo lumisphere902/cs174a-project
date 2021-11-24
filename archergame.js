@@ -279,15 +279,9 @@ export class ArcherGame extends Base_Scene {
         this.shapes.arrow.draw(context, program_state, arrow_transform, this.materials.plastic);
         if (this.projectile) {
             this.shapes.square.draw(context, program_state, ...this.projectile.update(context, program_state));
-            if (this.detect_collision(this.projectile.x, this.projectile.y, this.projectile.scale, this.projectile.scale, this.target.x, this.target.y, this.target.scale, this.target.scale)){
-                this.target = new Element(20, .5, 3, this.materials.plastic.override({
-                    color: hex_color("#ffffff")
-                }), 0, 0);
-
-                this.projectile = new Projectile(this.archer.x, this.archer.y, 2,
-                this.materials.plastic.override({
-                    color: hex_color("#0000ff")
-                }),  0, 0);
+            if (this.detect_collision(this.projectile.x, this.projectile.y, 2 * this.projectile.scale, 2 * this.projectile.scale, this.target.x, this.target.y, 2 * this.target.scale, 2 * this.target.scale)){
+                this.projectile.isColliding = true;
+                this.successful_hit();
             }
         }
     }

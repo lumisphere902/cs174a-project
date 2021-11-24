@@ -212,11 +212,13 @@ export class ArcherGame extends Base_Scene {
     successful_hit() {
         this.score++;
         this.randomize_parameters();
+        this.projectile = undefined;
     }
 
 
     failed_hit() {
         this.lives--;
+        this.projectile = undefined;
         if (this.lives <= 0) setTimeout(this.game_over(), 1000);
     }
 

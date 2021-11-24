@@ -5,8 +5,6 @@ const {
 } = tiny;
 
 //variables
-let angle = 45;
-let speed = 40;
 let t;
 
 class Cube extends Shape {
@@ -27,6 +25,20 @@ class Cube extends Shape {
     }
 }
 
+class Arrow extends Shape {
+    constructor() {
+        super("position", "normal", "texture_coord");
+        this.drawOneAxis(Mat4.identity(), [0, 1]);
+    }
+
+
+    drawOneAxis(transform, tex) {
+        // Use a different texture coordinate range for each of the three axes, so they show up differently.
+        defs.Closed_Cone.insert_transformed_copy_into(this, [4, 10, tex], transform.times(Mat4.translation(0, 0, 2)).times(Mat4.scale(.25, .25, .25)));
+        defs.Cylindrical_Tube.insert_transformed_copy_into(this, [7, 7, tex], transform.times(Mat4.translation(0, 0, 1)).times(Mat4.scale(.1, .1, 2)));
+    }
+}
+
 class Base_Scene extends Scene {
     /**
      *  **Base_scene** is a Scene that can be added to any display canvas.
@@ -39,6 +51,7 @@ class Base_Scene extends Scene {
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             'cube': new Cube(),
+            'arrow': new Arrow(),
         };
 
         // *** Materials
@@ -169,6 +182,8 @@ export class ArcherGame extends Base_Scene {
         this.ground = new Element(0, -102.5, 100, this.materials.plastic.override({
             color: hex_color("#964b00")
         }), 0, 0, 1.1);
+        this.angle = 45;
+        this.speed = 50;
     }
 
     make_control_panel() {
@@ -177,10 +192,10 @@ export class ArcherGame extends Base_Scene {
         this.new_line();
         // shoot
         this.key_triggered_button("Shoot", ["c"], this.shootProjectile);
-        this.key_triggered_button("Decrease angle", ["j"], () => {angle--; console.log(angle)});
-        this.key_triggered_button("Increase angle", ["l"], () => {angle++; console.log(angle)});
-        this.key_triggered_button("Decrease speed", ["u"], () => {speed--; console.log(speed)});
-        this.key_triggered_button("Increase speed", ["o"], () => {speed++; console.log(speed)});
+        this.key_triggered_button("Decrease angle", ["j"], () => {this.angle = Math.max(0, this.angle - 1)});
+        this.key_triggered_button("Increase angle", ["l"], () => {this.angle = Math.min(180, this.angle + 1)});
+        this.key_triggered_button("Decrease speed", ["u"], () => {this.speed = Math.max(20, this.speed - 1)});
+        this.key_triggered_button("Increase speed", ["o"], () => {this.speed = Math.min(120, this.speed + 1)});
         this.key_triggered_button("Successful hit (debug)", ["q"], this.successful_hit);
     }
 
@@ -190,7 +205,7 @@ export class ArcherGame extends Base_Scene {
     successful_hit() {
         this.score++;
         this.randomize_parameters();
-        this.projecitle = undefined;
+        this.projectile = undefined;
     }
 
     randomize_parameters() {
@@ -206,14 +221,26 @@ export class ArcherGame extends Base_Scene {
             this.projectile = new Projectile(this.archer.x, this.archer.y, 2,
                 this.materials.plastic.override({
                     color: hex_color("#0000ff")
-                }),  0.2+(speed/100) * Math.cos(angle*Math.PI/180), 0.2+(speed/100) * Math.sin(angle*Math.PI/180));
+                }),  (this.speed/100) * Math.cos(this.angle*Math.PI/180), (this.speed/100) * Math.sin(this.angle*Math.PI/180));
 
         }
     }
 
     drawObjects(context, program_state) {
         //this.shapes.cube.draw(context, program_state, ...this.origin.update(context, program_state));
-        this.shapes.cube.draw(context, program_state, ...this.archer.update(context, program_state));
+        const [archer_transform, archer_mat] = this.archer.update(context, program_state);
+        // Draw archer
+        this.shapes.cube.draw(context, program_state, archer_transform, archer_mat);
+        // Draw direction/power
+        const rad_angle = this.angle*Math.PI/180;
+        const arrow_transform = Mat4.identity()
+        .times(archer_transform)
+        .times(Mat4.rotation(rad_angle - Math.PI / 2, 0, 0, 1))
+        .times(Mat4.scale(1, this.speed / 40, 1))
+        .times(Mat4.translation(0, 0, 1.5))
+        .times(Mat4.rotation(- Math.PI / 2, 1, 0, 0));
+        this.shapes.arrow.draw(context, program_state, arrow_transform, this.materials.plastic);
+
         this.shapes.cube.draw(context, program_state, ...this.ground.update(context, program_state));
         this.shapes.cube.draw(context, program_state, ...this.target.update(context, program_state));
         if (this.projectile) {

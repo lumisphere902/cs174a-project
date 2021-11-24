@@ -81,7 +81,7 @@ class Base_Scene extends Scene {
                 texture: new Texture("assets/bomb.png", "LINEAR_MIPMAP_LINEAR")
              })
         };
-        program_state.set_camera(Mat4.look_at(vec3(0, 0, 80), vec3(0, 0, 0), vec3(0, 1, 0)));
+        this.initial_camera_location = Mat4.look_at(vec3(0, 0, 80), vec3(0, 0, 0), vec3(0, 1, 0));
     }
 
     display(context, program_state) {

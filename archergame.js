@@ -247,7 +247,7 @@ export class ArcherGame extends Base_Scene {
     shootProjectile() {
         if (!this.projectile) {
             this.projectile = new Projectile(this.archer.x, this.archer.y, 2,
-            this.materials.bomb,  0.2+(speed/100) * Math.cos(angle*Math.PI/180), 0.2+(speed/100) * Math.sin(angle*Math.PI/180));
+            this.materials.bomb,  0.2+(this.speed/100) * Math.cos(this.angle*Math.PI/180), 0.2+(this.speed/100) * Math.sin(this.angle*Math.PI/180));
         }
     }
 

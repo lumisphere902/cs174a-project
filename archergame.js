@@ -36,7 +36,6 @@ class Base_Scene extends Scene {
         this.hover = this.swarm = false;
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
-
             square: new Square(),
             ground: new Square(),
             tower: new Square(),
@@ -125,6 +124,8 @@ class Element {
 
     // Call once per frame
     update(context, program_state) {
+        this.x += this.dx;
+        this.y += this.dy;
         return this.draw(context, program_state);
     }
 }
@@ -154,7 +155,7 @@ class Projectile {
     update(context, program_state) {
         if(this.y>0) {
           this.dy -= .00861
-          console.log("dy: "+ this.dy)
+          // console.log("dy: "+ this.dy)
           this.x += this.dx;
           this.y += this.dy;  
         }
@@ -214,6 +215,7 @@ export class ArcherGame extends Base_Scene {
         this.projectile = undefined;
     }
 
+
     failed_hit() {
         this.lives--;
         this.projectile = undefined;
@@ -231,6 +233,15 @@ export class ArcherGame extends Base_Scene {
         const max = 30;
         this.target.x = min + Math.random() * (max - min);
         this.target.y = min + Math.random() * (max - min);
+    }
+
+    detect_collision( x1, y1, w1, h1, x2, y2, w2, h2 )
+    {
+        if (x2 > w1 + x1 || x1 > w2 + x2 || y2 > h1 + y1 || y1 > h2 + y2)
+        {
+            return false;
+        }
+        return true;
     }
 
     shootProjectile() {
@@ -263,6 +274,9 @@ export class ArcherGame extends Base_Scene {
         this.shapes.arrow.draw(context, program_state, arrow_transform, this.materials.plastic);
         if (this.projectile) {
             this.shapes.square.draw(context, program_state, ...this.projectile.update(context, program_state));
+            if (this.detect_collision(this.projectile.x, this.projectile.y, 2 * this.projectile.scale, 2 * this.projectile.scale, this.target.x, this.target.y, 2 * this.target.scale, 2 * this.target.scale)){
+                this.successful_hit();
+            }
         }
     }
 

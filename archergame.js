@@ -164,12 +164,29 @@ export class ArcherGame extends Base_Scene {
      */
     constructor() {
         super();
-        this.colors = [];
-        this.num_boxes = 8;
-        this.sit_still = false;
-        this.draw_outline = false;
+        this.init();
+    }
+
+    make_control_panel() {
+        this.live_string(box => box.textContent = `Score: ${this.score}, Lives: ${this.lives}`);
+        this.new_line();
+        this.new_line();
+        // shoot
+        this.key_triggered_button("Shoot", ["c"], this.shootProjectile);
+        this.key_triggered_button("Decrease angle", ["j"], () => {this.angle = Math.max(0, this.angle - 1)});
+        this.key_triggered_button("Increase angle", ["l"], () => {this.angle = Math.min(180, this.angle + 1)});
+        this.key_triggered_button("Decrease speed", ["u"], () => {this.speed = Math.max(20, this.speed - 1)});
+        this.key_triggered_button("Increase speed", ["o"], () => {this.speed = Math.min(120, this.speed + 1)});
+        this.key_triggered_button("Successful hit (debug)", ["q"], this.successful_hit);
+        this.key_triggered_button("Failed hit (debug)", ["f"], this.failed_hit);
+    }
+
+    //this.dx = (speed/100) * Math.cos(angle);
+    //this.dy = (speed/100) * Math.sin(angle) - 9.81*t;
+
+    init() {
         this.score = 0;
-        //    constructor(x, y, scale, material, dx, dy, zscale)
+        this.lives = 3;
         this.origin = new Element(0, 0, 1, this.materials.plastic.override({
             color: hex_color("#ffffff")
         }), 0, 0);
@@ -186,26 +203,21 @@ export class ArcherGame extends Base_Scene {
         this.speed = 50;
     }
 
-    make_control_panel() {
-        this.live_string(box => box.textContent = `Score: ${this.score}`);
-        this.new_line();
-        this.new_line();
-        // shoot
-        this.key_triggered_button("Shoot", ["c"], this.shootProjectile);
-        this.key_triggered_button("Decrease angle", ["j"], () => {this.angle = Math.max(0, this.angle - 1)});
-        this.key_triggered_button("Increase angle", ["l"], () => {this.angle = Math.min(180, this.angle + 1)});
-        this.key_triggered_button("Decrease speed", ["u"], () => {this.speed = Math.max(20, this.speed - 1)});
-        this.key_triggered_button("Increase speed", ["o"], () => {this.speed = Math.min(120, this.speed + 1)});
-        this.key_triggered_button("Successful hit (debug)", ["q"], this.successful_hit);
-    }
-
-    //this.dx = (speed/100) * Math.cos(angle);
-    //this.dy = (speed/100) * Math.sin(angle) - 9.81*t;
-
     successful_hit() {
         this.score++;
         this.randomize_parameters();
         this.projectile = undefined;
+    }
+
+    failed_hit() {
+        this.lives--;
+        this.projectile = undefined;
+        if (this.lives <= 0) setTimeout(this.game_over(), 1000);
+    }
+
+    game_over() {
+        window.alert('Game over!');
+        window.location.reload();
     }
 
     randomize_parameters() {

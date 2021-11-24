@@ -190,6 +190,7 @@ export class ArcherGame extends Base_Scene {
     successful_hit() {
         this.score++;
         this.randomize_parameters();
+        this.projecitle = undefined;
     }
 
     randomize_parameters() {

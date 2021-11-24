@@ -155,6 +155,7 @@ export class ArcherGame extends Base_Scene {
         this.num_boxes = 8;
         this.sit_still = false;
         this.draw_outline = false;
+        this.score = 0;
         //    constructor(x, y, scale, material, dx, dy, zscale)
         this.origin = new Element(0, 0, 1, this.materials.plastic.override({
             color: hex_color("#ffffff")
@@ -171,16 +172,33 @@ export class ArcherGame extends Base_Scene {
     }
 
     make_control_panel() {
+        this.live_string(box => box.textContent = `Score: ${this.score}`);
+        this.new_line();
+        this.new_line();
         // shoot
         this.key_triggered_button("Shoot", ["c"], this.shootProjectile);
         this.key_triggered_button("Decrease angle", ["j"], () => {angle--; console.log(angle)});
         this.key_triggered_button("Increase angle", ["l"], () => {angle++; console.log(angle)});
         this.key_triggered_button("Decrease speed", ["u"], () => {speed--; console.log(speed)});
         this.key_triggered_button("Increase speed", ["o"], () => {speed++; console.log(speed)});
+        this.key_triggered_button("Successful hit (debug)", ["q"], this.successful_hit);
     }
 
     //this.dx = (speed/100) * Math.cos(angle);
     //this.dy = (speed/100) * Math.sin(angle) - 9.81*t;
+
+    successful_hit() {
+        this.score++;
+        this.randomize_parameters();
+    }
+
+    randomize_parameters() {
+        this.target.scale = 1 + 10 * Math.random();
+        const min = this.target.scale;
+        const max = 30;
+        this.target.x = min + Math.random() * (max - min);
+        this.target.y = min + Math.random() * (max - min);
+    }
 
     shootProjectile() {
         if (!this.projectile) {

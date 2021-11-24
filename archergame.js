@@ -34,7 +34,6 @@ class Base_Scene extends Scene {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
         super();
         this.hover = this.swarm = false;
-        this.isColliding = false;
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             square: new Square(),
@@ -113,8 +112,6 @@ class Element {
         this.dx = dx;
         this.dy = dy;
         this.zscale = zscale || 1;
-
-        this.isColliding = false;
     }
 
     draw(context, program_state) {
@@ -142,8 +139,6 @@ class Projectile {
         this.dx = dx;
         this.dy = dy;
         this.zscale = zscale || 1;
-
-        this.isColliding = false;
     }
 
     draw(context, program_state) {
@@ -217,13 +212,11 @@ export class ArcherGame extends Base_Scene {
     successful_hit() {
         this.score++;
         this.randomize_parameters();
-        this.projectile = undefined;
     }
 
 
     failed_hit() {
         this.lives--;
-        this.projectile = undefined;
         if (this.lives <= 0) setTimeout(this.game_over(), 1000);
     }
 
@@ -280,7 +273,6 @@ export class ArcherGame extends Base_Scene {
         if (this.projectile) {
             this.shapes.square.draw(context, program_state, ...this.projectile.update(context, program_state));
             if (this.detect_collision(this.projectile.x, this.projectile.y, 2 * this.projectile.scale, 2 * this.projectile.scale, this.target.x, this.target.y, 2 * this.target.scale, 2 * this.target.scale)){
-                this.projectile.isColliding = true;
                 this.successful_hit();
             }
         }

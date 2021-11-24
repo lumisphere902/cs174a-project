@@ -236,7 +236,7 @@ export class ArcherGame extends Base_Scene {
     shootProjectile() {
         if (!this.projectile) {
             this.projectile = new Projectile(this.archer.x, this.archer.y, 2,
-            this.materials.bomb,  0.2+(speed/100) * Math.cos(angle*Math.PI/180), 0.2+(speed/100) * Math.sin(angle*Math.PI/180));
+            this.materials.bomb,  0.2+(this.speed/100) * Math.cos(this.angle*Math.PI/180), 0.2+(this.speed/100) * Math.sin(this.angle*Math.PI/180));
         }
     }
 
@@ -251,7 +251,7 @@ export class ArcherGame extends Base_Scene {
 
         const [archer_transform, archer_mat] = this.archer.update(context, program_state);
         // Draw archer
-        this.shapes.cube.draw(context, program_state, archer_transform, archer_mat);
+        this.shapes.square.draw(context, program_state, archer_transform, archer_mat);
         // Draw direction/power
         const rad_angle = this.angle*Math.PI/180;
         const arrow_transform = Mat4.identity()

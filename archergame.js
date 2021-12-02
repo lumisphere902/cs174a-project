@@ -61,32 +61,37 @@ class Base_Scene extends Scene {
              tank: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 0.9, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/tank.png", "LINEAR_MIPMAP_LINEAR")
+                texture: new Texture("assets/tank.png", "LINEAR_MIPMAP_LINEAR"),
              }),
              tower: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 0.9, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/metal.png", "LINEAR_MIPMAP_LINEAR")
+                texture: new Texture("assets/metal.png", "LINEAR_MIPMAP_LINEAR"),
              }),
              grass: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 0.9, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/grass.jpg", "LINEAR_MIPMAP_LINEAR")
+                texture: new Texture("assets/grass.jpg", "LINEAR_MIPMAP_LINEAR"),
              }),
              bunker: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 0.9, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/bunker.png", "LINEAR_MIPMAP_LINEAR")
+                texture: new Texture("assets/bunker.png", "LINEAR_MIPMAP_LINEAR"),
              }),
              bomb: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 0.9, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/bomb.png", "LINEAR_MIPMAP_LINEAR")
+                texture: new Texture("assets/bomb.png", "LINEAR_MIPMAP_LINEAR"),
+             }),
+             explosion: new Material(new Textured_Phong(), {
+                color: hex_color("#000000"),
+                ambient: 0.9, diffusivity: 0.1, specularity: 0.1,
+                texture: new Texture("assets/explosion.png", "LINEAR_MIPMAP_LINEAR"),
              }),
              sky: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 0.9, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/sky.png", "LINEAR_MIPMAP_LINEAR")
+                texture: new Texture("assets/sky.png", "LINEAR_MIPMAP_LINEAR"),
              }),
         };
         this.first = true;
@@ -187,6 +192,7 @@ export class ArcherGame extends Base_Scene {
         this.projectile.dx = 0;
         this.projectile.dy = 0;
         this.projectile.gravity = false;
+        this.projectile.material = this.materials.explosion;
     }
 
     successful_hit() {

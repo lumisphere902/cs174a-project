@@ -232,7 +232,7 @@ export class ArcherGame extends Base_Scene {
 
     detect_collision( x1, y1, w1, h1, x2, y2, w2, h2 )
     {
-        if (x2 > w1 + x1 || x1 > w2 + x2 || y2 > h1 + y1 || y1 > h2 + y2)
+        if (x2 - w2 > w1 + x1 || x1 - w1 > w2 + x2 || y2 - h2 > h1 + y1 || y1 - h1 > h2 + y2)
         {
             return false;
         }
@@ -273,7 +273,7 @@ export class ArcherGame extends Base_Scene {
         this.shapes.arrow.draw(context, program_state, arrow_transform, this.materials.particle);
         if (this.projectile) {
             this.shapes.square.draw(context, program_state, ...this.projectile.update(context, program_state));
-            if (this.detect_collision(this.projectile.x, this.projectile.y, 2 * this.projectile.scale, 2 * this.projectile.scale, this.target.x, this.target.y, 2 * this.target.scale, 2 * this.target.scale)){
+            if (this.detect_collision(this.projectile.x, this.projectile.y, this.projectile.scale, this.projectile.scale, this.target.x, this.target.y, this.target.scale, this.target.scale)){
                 this.successful_hit();
             }
         }

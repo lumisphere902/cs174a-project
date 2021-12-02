@@ -81,12 +81,18 @@ class Base_Scene extends Scene {
                 texture: new Texture("assets/bomb.png", "LINEAR_MIPMAP_LINEAR")
              })
         };
-        this.initial_camera_location = Mat4.look_at(vec3(0, 0, 80), vec3(0, 0, 0), vec3(0, 1, 0));
+        this.first = true;
     }
 
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
+        
+        // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
+        if (this.first) {
+            program_state.set_camera(Mat4.look_at(vec3(0, 0, 80), vec3(0, 0, 0), vec3(0, 1, 0)));
+            this.first = false;
+        }
         
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, 1, 100);

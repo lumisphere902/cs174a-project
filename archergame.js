@@ -41,6 +41,7 @@ class Base_Scene extends Scene {
             bomb: new Grid_Sphere(),
             arrow: new Arrow(),
             sky: new Square(),
+            particle: new Square(),
 
         };
 
@@ -50,7 +51,7 @@ class Base_Scene extends Scene {
 
         // *** Materials
         this.materials = {
-            plastic: new Material(new defs.Phong_Shader(),
+            particle: new Material(new defs.Phong_Shader(),
                 {
                     ambient: .4,
                     diffusivity: .6,
@@ -141,12 +142,6 @@ class Element {
 }
 
 export class ArcherGame extends Base_Scene {
-    /**
-     * This Scene object can be added to any display canvas.
-     * We isolate that code so it can be experimented with on its own.
-     * This gives you a very small code sandbox for editing a simple scene, and for
-     * experimenting with matrix transformations.
-     */
     constructor() {
         super();
         this.init();
@@ -166,15 +161,11 @@ export class ArcherGame extends Base_Scene {
         this.key_triggered_button("Failed hit (debug)", ["f"], this.failed_hit);
     }
 
-    //this.dx = (speed/100) * Math.cos(angle);
-    //this.dy = (speed/100) * Math.sin(angle) - 9.81*t;
 
     init() {
         this.score = 0;
         this.lives = 3;
-        this.origin = new Element(0, 0, 1, this.materials.plastic.override({
-            color: hex_color("#ffffff")
-        }), 0, 0);
+
         this.level = Math.floor(Math.random()*(-95 +125))-125;
 
         this.tower = new Element(0, 0, 10, this.materials.tower, 0, 0);
@@ -185,18 +176,18 @@ export class ArcherGame extends Base_Scene {
         this.ground2 = new Element(97, this.level, 100, this.materials.grass, 0, 0, 1.1, false);       
         this.angle = 45;
         this.speed = 50;
+        
+        this.test = new Element (10, 10, 15, this.materials.grass, 0, 0)
+
     }
 
     successful_hit() {
-        this.score++;
-        this.randomize_parameters();
-        this.projectile = undefined;
+//         this.score++;
+//         this.randomize_parameters();
     }
-
 
     failed_hit() {
         this.lives--;
-        this.projectile = undefined;
         if (this.lives <= 0) setTimeout(this.game_over(), 1000);
     }
 
@@ -219,7 +210,10 @@ export class ArcherGame extends Base_Scene {
         {
             return false;
         }
-        return true;
+        else {
+            
+            return true;
+        }
     }
 
     shootProjectile() {
@@ -250,18 +244,40 @@ export class ArcherGame extends Base_Scene {
         .times(Mat4.scale(1, this.speed / 40, 1))
         .times(Mat4.translation(0, 0, 1.5))
         .times(Mat4.rotation(- Math.PI / 2, 1, 0, 0));
-        this.shapes.arrow.draw(context, program_state, arrow_transform, this.materials.plastic);
+        this.shapes.arrow.draw(context, program_state, arrow_transform, this.materials.particle);
+        let particleX, particleY;
         if (this.projectile) {
             this.shapes.square.draw(context, program_state, ...this.projectile.update(context, program_state));
             if (this.detect_collision(this.projectile.x, this.projectile.y, 2 * this.projectile.scale, 2 * this.projectile.scale, this.target.x, this.target.y, 2 * this.target.scale, 2 * this.target.scale)){
-                this.successful_hit();
+//                 this.successful_hit();
+                this.explode = true;
+                particleX = this.projectile.x;
+                particleY = this.projectile.y;
+//                 this.projectile = undefined;
             }
+        }
+        if(this.explode) {
+            console.log("im exploding")
+            
+            for(let i=0; i<2; i++){
+                this.particle = new Element(particleX, particleY, 3, this.materials.particle, 0, 0)
+                this.shapes.particle.draw(context, program_state, Mat4.identity().times(Mat4.translation(particleX+(Math.random()*(20)-10), particleY+(Math.random()*(20)-10), 0)), this.materials.particle);
+            }
+            
+            setTimeout(() => { 
+                if(this.explode){
+                   this.explode = false;
+                   this.score++;
+                   this.randomize_parameters();
+                   this.projectile = undefined; 
+                }                
+            }, 2000)
+//             this.projectile = undefined;
         }
     }
 
     display(context, program_state) {
         super.display(context, program_state);
-
         this.drawObjects(context, program_state);
     }
 }

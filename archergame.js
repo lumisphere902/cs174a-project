@@ -8,6 +8,7 @@ const {Rounded_Capped_Cylinder, Square, Axis_Arrows, Textured_Phong, Grid_Sphere
 
 //variables
 let t;
+const NUM_PARTICLES = 5;
 
 class Arrow extends Shape {
     constructor() {
@@ -173,7 +174,7 @@ export class ArcherGame extends Base_Scene {
         this.archer = new Element(-20, 2.5, 5, this.materials.tank, 0, 0);
         this.target = new Element(20, this.level + 104.5, 5, this.materials.bunker, 0, 0);
         this.ground = new Element(-97, -102.5, 100, this.materials.grass, 0, 0, 1.1, false); 
-        this.ground2 = new Element(97, this.level, 100, this.materials.grass, 0, 0, 1.1, false);       
+        this.ground2 = new Element(97, this.level, 100, this.materials.grass, 0, 0, 1.1, false);
         this.angle = 45;
         this.speed = 50;
         
@@ -181,18 +182,37 @@ export class ArcherGame extends Base_Scene {
 
     }
 
+    explode() {
+        this.exploding = true;
+        this.projectile.dx = 0;
+        this.projectile.dy = 0;
+        this.projectile.gravity = false;
+    }
+
     successful_hit() {
-//         this.score++;
-//         this.randomize_parameters();
+        if (this.exploding) return;
+        this.explode();
+        setTimeout(() => { 
+            this.exploding = false;
+            this.score++;
+            this.randomize_parameters();
+            this.projectile = undefined; 
+        }, 2000);
     }
 
     failed_hit() {
-        this.lives--;
-        if (this.lives <= 0) setTimeout(this.game_over(), 1000);
+        if (this.exploding) return;
+        this.explode();
+        setTimeout(() => { 
+            this.exploding = false;
+            this.lives--;
+            this.projectile = undefined; 
+            if (this.lives <= 0) setTimeout(this.game_over(), 2000);
+        }, 2000);
     }
 
     game_over() {
-        window.alert('Game over!');
+        window.alert(`Game over! Your score was ${this.score}`);
         window.location.reload();
     }
 
@@ -245,34 +265,19 @@ export class ArcherGame extends Base_Scene {
         .times(Mat4.translation(0, 0, 1.5))
         .times(Mat4.rotation(- Math.PI / 2, 1, 0, 0));
         this.shapes.arrow.draw(context, program_state, arrow_transform, this.materials.particle);
-        let particleX, particleY;
         if (this.projectile) {
             this.shapes.square.draw(context, program_state, ...this.projectile.update(context, program_state));
             if (this.detect_collision(this.projectile.x, this.projectile.y, 2 * this.projectile.scale, 2 * this.projectile.scale, this.target.x, this.target.y, 2 * this.target.scale, 2 * this.target.scale)){
-//                 this.successful_hit();
-                this.explode = true;
-                particleX = this.projectile.x;
-                particleY = this.projectile.y;
-//                 this.projectile = undefined;
+                this.successful_hit();
             }
         }
-        if(this.explode) {
-            console.log("im exploding")
-            
-            for(let i=0; i<2; i++){
-                this.particle = new Element(particleX, particleY, 3, this.materials.particle, 0, 0)
-                this.shapes.particle.draw(context, program_state, Mat4.identity().times(Mat4.translation(particleX+(Math.random()*(20)-10), particleY+(Math.random()*(20)-10), 0)), this.materials.particle);
+
+        if (this.exploding) {
+            for (let i = 0; i < NUM_PARTICLES; i++) {
+                const particle_transform = Mat4.identity()
+                .times(Mat4.translation(this.projectile.x + (Math.random()*(20)-10), this.projectile.y + (Math.random()*(20)-10), 0));
+                this.shapes.particle.draw(context, program_state, particle_transform, this.materials.particle);
             }
-            
-            setTimeout(() => { 
-                if(this.explode){
-                   this.explode = false;
-                   this.score++;
-                   this.randomize_parameters();
-                   this.projectile = undefined; 
-                }                
-            }, 2000)
-//             this.projectile = undefined;
         }
     }
 

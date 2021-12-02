@@ -8,7 +8,6 @@ const {Rounded_Capped_Cylinder, Square, Axis_Arrows, Textured_Phong, Grid_Sphere
 
 //variables
 let t;
-let level = Math.floor(Math.random()*(-95 +125))-125;
 
 class Arrow extends Shape {
     constructor() {
@@ -112,7 +111,7 @@ class Base_Scene extends Scene {
 }
 
 class Element {
-    constructor(x, y, scale, material, dx, dy, zscale) {
+    constructor(x, y, scale, material, dx, dy, zscale, gravity) {
         this.x = x;
         this.y = y;
         this.scale = scale;
@@ -120,6 +119,7 @@ class Element {
         this.dx = dx;
         this.dy = dy;
         this.zscale = zscale || 1;
+        this.gravity = gravity || false;
     }
 
     draw(context, program_state) {
@@ -132,48 +132,14 @@ class Element {
 
     // Call once per frame
     update(context, program_state) {
+        if (this.gravity) {
+            this.dy -= .00861
+        }
         this.x += this.dx;
         this.y += this.dy;
         return this.draw(context, program_state);
     }
 }
-
-class Projectile {
-    constructor(x, y, scale, material, dx, dy, zscale) {
-        this.x = x;
-        this.y = y;
-        this.scale = scale;
-        this.material = material;
-        this.dx = dx;
-        this.dy = dy;
-        this.zscale = zscale || 1;
-    }
-
-    draw(context, program_state) {
-        const t = this.t = program_state.animation_time / 1000;
-        let model_transform = Mat4.identity();
-        model_transform = model_transform
-            .times(Mat4.translation(this.x, this.y, 0))
-            .times(Mat4.scale(this.scale, this.scale, this.zscale))
-            
-        return [model_transform, this.material]
-    }
-
-    // Call once per frame
-    update(context, program_state) {
-//         console.log(level + 102.5)
-        if(this.y > level + 102.5) {
-           
-          this.dy -= .00861
-          // console.log("dy: "+ this.dy)
-          this.x += this.dx;
-          this.y += this.dy;  
-        }
-        
-        return this.draw(context, program_state);
-    }
-}
-
 
 export class ArcherGame extends Base_Scene {
     constructor() {
@@ -199,17 +165,15 @@ export class ArcherGame extends Base_Scene {
     init() {
         this.score = 0;
         this.lives = 3;
-//         this.origin = new Element(0, 0, 1, this.materials.plastic.override({
-//             color: hex_color("#ffffff")
-//         }), 0, 0);
-        
-        
-        this.tower = new Element(10, 10, 10, this.materials.tower, 0, 0);
+
+        this.level = Math.floor(Math.random()*(-95 +125))-125;
+
+        this.tower = new Element(0, 0, 10, this.materials.tower, 0, 0);
         this.sky = new Element(0, 0, 30, this.materials.sky, 0, -1);
         this.archer = new Element(-20, 2.5, 5, this.materials.tank, 0, 0);
-        this.target = new Element(20, level + 104.5, 5, this.materials.bunker, 0, 0);
-        this.ground = new Element(-97, -102.5, 100, this.materials.grass, 0, 0, 1.1); 
-        this.ground2 = new Element(97, level, 100, this.materials.grass, 0, 0, 1.1);       
+        this.target = new Element(20, this.level + 104.5, 5, this.materials.bunker, 0, 0);
+        this.ground = new Element(-97, -102.5, 100, this.materials.grass, 0, 0, 1.1, false); 
+        this.ground2 = new Element(97, this.level, 100, this.materials.grass, 0, 0, 1.1, false);       
         this.angle = 45;
         this.speed = 50;
         
@@ -237,9 +201,7 @@ export class ArcherGame extends Base_Scene {
         const min = 10;
         const max = 30;
         this.target.x = min + Math.random() * (max - min);
-        this.target.y = level + 104.5 - 4/this.target.scale;
-//         level = Math.floor(Math.random()*(-95 +125))-125;
-//         this.target.y = min + Math.random() * (max - min);
+        this.target.y = this.level + 104.5 - 4/this.target.scale;
     }
 
     detect_collision( x1, y1, w1, h1, x2, y2, w2, h2 )
@@ -256,8 +218,8 @@ export class ArcherGame extends Base_Scene {
 
     shootProjectile() {
         if (!this.projectile) {
-            this.projectile = new Projectile(this.archer.x, this.archer.y, 2,
-            this.materials.bomb,  0.2+(this.speed/100) * Math.cos(this.angle*Math.PI/180), 0.2+(this.speed/100) * Math.sin(this.angle*Math.PI/180));
+            this.projectile = new Element(this.archer.x, this.archer.y, 2,
+            this.materials.bomb,  0.2+(this.speed/100) * Math.cos(this.angle*Math.PI/180), 0.2+(this.speed/100) * Math.sin(this.angle*Math.PI/180), 1, true);
         }
     }
 

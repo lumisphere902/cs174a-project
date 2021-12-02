@@ -236,9 +236,22 @@ export class ArcherGame extends Base_Scene {
         {
             return false;
         }
-        else {
-            
+        else 
+        {
             return true;
+        }
+    }
+
+    detect_tower_collision( x1, y1, w1, h1 )
+    {
+        // tower dependenant on scaled size 
+        if ( x1 > -5 && x1 < 5 && y1 < 20 )
+        {
+            return true;
+        }
+        else 
+        {
+            return false;
         }
     }
 
@@ -275,6 +288,15 @@ export class ArcherGame extends Base_Scene {
             this.shapes.square.draw(context, program_state, ...this.projectile.update(context, program_state));
             if (this.detect_collision(this.projectile.x, this.projectile.y, this.projectile.scale, this.projectile.scale, this.target.x, this.target.y, this.target.scale, this.target.scale)){
                 this.successful_hit();
+            }
+            if (this.detect_tower_collision(this.projectile.x, this.projectile.y, this.projectile.scale, this.projectile.scale) ){
+                this.failed_hit();
+            }
+            if (this.detect_collision(this.projectile.x, this.projectile.y, this.projectile.scale, this.projectile.scale, this.ground2.x, this.ground2.y, this.ground2.scale, this.ground2.scale)){
+                 this.failed_hit();
+            }
+            if (this.detect_collision(this.projectile.x, this.projectile.y, this.projectile.scale, this.projectile.scale, this.ground.x, this.ground.y, this.ground.scale, this.ground.scale)){
+                 this.failed_hit();
             }
         }
 

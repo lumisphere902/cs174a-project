@@ -7,7 +7,6 @@ const {
 const {Rounded_Capped_Cylinder, Square, Axis_Arrows, Textured_Phong, Grid_Sphere} = defs
 
 //variables
-let t;
 const NUM_PARTICLES = 5;
 
 class Arrow extends Shape {

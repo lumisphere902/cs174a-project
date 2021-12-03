@@ -222,6 +222,7 @@ export class ArcherGame extends Base_Scene {
         this.projectile.dx = 0;
         this.projectile.dy = 0;
         this.projectile.gravity = false;
+        this.projectile.wind_direction = undefined;
         this.projectile.material = this.materials.explosion;
     }
 

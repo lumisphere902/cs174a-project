@@ -117,7 +117,7 @@ class Base_Scene extends Scene {
 }
 
 class Element {
-    constructor(x, y, scale, material, dx, dy, zscale, gravity) {
+    constructor(x, y, scale, material, dx, dy, zscale, gravity, wind_strength, wind_direction) {
         this.x = x;
         this.y = y;
         this.scale = scale;
@@ -126,6 +126,8 @@ class Element {
         this.dy = dy;
         this.zscale = zscale || 1;
         this.gravity = gravity || false;
+        this.wind = wind_strength;
+        this.wind_direction = wind_direction;
     }
 
     draw(context, program_state) {
@@ -141,8 +143,27 @@ class Element {
         if (this.gravity) {
             this.dy -= .00861
         }
+
+        if (this.wind_direction == "West"){
+            //console.log("this is going west");
+            this.dx -= 0.001 * this.wind;
+        } else if (this.wind_direction == "East"){
+            //console.log("this is going East");
+            this.dx += 0.001 * this.wind;
+        }
         this.x += this.dx;
+        //alter x and y based on wind and direction
+        //this will make it change every frame which isn't right 
+       
+        if (this.wind_direction == "North"){
+            this.dy += 0.001 * this.wind;
+            //console.log("this is going North");
+        } else if (this.wind_direction == "South"){
+            //console.log("this is going South");
+            this.dy -= 0.001 * this.wind;
+        }
         this.y += this.dy;
+        
         return this.draw(context, program_state);
     }
 }
@@ -154,7 +175,7 @@ export class ArcherGame extends Base_Scene {
     }
 
     make_control_panel() {
-        this.live_string(box => box.textContent = `Score: ${this.score}, Lives: ${this.lives}`);
+        this.live_string(box => box.textContent = `Score: ${this.score}, Lives: ${this.lives}, Wind: ${this.wind_strength1} mph ${this.wind_direction1}`);
         this.new_line();
         this.new_line();
         // shoot
@@ -163,14 +184,29 @@ export class ArcherGame extends Base_Scene {
         this.key_triggered_button("Increase angle", ["l"], () => {this.angle = Math.min(180, this.angle + 1)});
         this.key_triggered_button("Decrease speed", ["u"], () => {this.speed = Math.max(20, this.speed - 1)});
         this.key_triggered_button("Increase speed", ["o"], () => {this.speed = Math.min(120, this.speed + 1)});
-        this.key_triggered_button("Successful hit (debug)", ["q"], this.successful_hit);
-        this.key_triggered_button("Failed hit (debug)", ["f"], this.failed_hit);
+        //this.key_triggered_button("Successful hit (debug)", ["q"], this.successful_hit);
+        //this.key_triggered_button("Failed hit (debug)", ["f"], this.failed_hit);
     }
 
 
     init() {
         this.score = 0;
         this.lives = 3;
+        this.high_score = 0;
+        this.wind_strength1 = Math.floor(Math.random() * 5);
+        this.direction = Math.floor(Math.random() * 4) + 1;
+        
+        if (this.direction == 1){
+            this.wind_direction1 = "North";
+        } else if (this.direction == 2){
+            this.wind_direction1 = "East";
+        } else if (this.direction == 3){
+            this.wind_direction1 = "South";
+        } else if (this.direction == 4){
+            this.wind_direction1 = "West";
+        } else if (this.direction < 1 || this.direction > 4) {
+            this.wind_direction1 = "ERROR";
+        }
 
         this.level = Math.floor(Math.random()*(-95 +125))-125;
 
@@ -218,7 +254,12 @@ export class ArcherGame extends Base_Scene {
     }
 
     game_over() {
-        window.alert(`Game over! Your score was ${this.score}`);
+        if (this.score > this.high_score){
+            this.high_score = this.score;
+            window.alert(`Game over! New high score: ${this.high_score}`);
+        } else {
+            window.alert(`Game over! Your score was ${this.score}. Previous high score: ${this.high_score}`);
+        }
         window.location.reload();
     }
 
@@ -258,7 +299,7 @@ export class ArcherGame extends Base_Scene {
     shootProjectile() {
         if (!this.projectile) {
             this.projectile = new Element(this.archer.x, this.archer.y, 2,
-            this.materials.bomb,  0.2+(this.speed/100) * Math.cos(this.angle*Math.PI/180), 0.2+(this.speed/100) * Math.sin(this.angle*Math.PI/180), 1, true);
+            this.materials.bomb,  0.2+(this.speed/100) * Math.cos(this.angle*Math.PI/180), 0.2+(this.speed/100) * Math.sin(this.angle*Math.PI/180), 1, true, this.wind_strength1, this.wind_direction1);
         }
     }
 

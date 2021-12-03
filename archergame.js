@@ -190,7 +190,6 @@ export class ArcherGame extends Base_Scene {
     init() {
         this.score = 0;
         this.lives = 3;
-        this.high_score = 0;
         this.wind_strength1 = Math.floor(Math.random() * 5);
         this.direction = Math.floor(Math.random() * 4) + 1;
         
@@ -253,12 +252,7 @@ export class ArcherGame extends Base_Scene {
     }
 
     game_over() {
-        if (this.score > this.high_score){
-            this.high_score = this.score;
-            window.alert(`Game over! New high score: ${this.high_score}`);
-        } else {
-            window.alert(`Game over! Your score was ${this.score}. Previous high score: ${this.high_score}`);
-        }
+        window.alert(`Game over! Your score was ${this.score}`);
         window.location.reload();
     }
 

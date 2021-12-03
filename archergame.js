@@ -43,7 +43,6 @@ class Base_Scene extends Scene {
             arrow: new Arrow(),
             sky: new Square(),
             particle: new Square(),
-
         };
 
         this.shapes.ground.arrays.texture_coord = this.shapes.ground.arrays.texture_coord.map(v => vec(v[0]*3, v[1]*3))
@@ -92,6 +91,11 @@ class Base_Scene extends Scene {
                 color: hex_color("#000000"),
                 ambient: 0.9, diffusivity: 0.1, specularity: 0.1,
                 texture: new Texture("assets/sky.png", "LINEAR_MIPMAP_LINEAR"),
+             }),
+             background: new Material(new Textured_Phong(), {
+                color: hex_color("#000000"),
+                ambient: 0.9, diffusivity: 0.1, specularity: 0.1,
+                texture: new Texture("assets/background1.jpg", "LINEAR_MIPMAP_LINEAR"),
              }),
         };
         this.first = true;
@@ -152,9 +156,9 @@ class Element {
         }
         this.x += this.dx;
         
-        if (this.wind_direction == "North"){
+        if (this.wind_direction == "Up"){
             this.dy += 0.001 * this.wind;
-        } else if (this.wind_direction == "South"){
+        } else if (this.wind_direction == "Down"){
             this.dy -= 0.001 * this.wind;
         }
         this.y += this.dy;
@@ -191,11 +195,11 @@ export class ArcherGame extends Base_Scene {
         this.direction = Math.floor(Math.random() * 4) + 1;
         
         if (this.direction == 1){
-            this.wind_direction1 = "North";
+            this.wind_direction1 = "Up";
         } else if (this.direction == 2){
             this.wind_direction1 = "East";
         } else if (this.direction == 3){
-            this.wind_direction1 = "South";
+            this.wind_direction1 = "Down";
         } else if (this.direction == 4){
             this.wind_direction1 = "West";
         } else if (this.direction < 1 || this.direction > 4) {
@@ -206,7 +210,7 @@ export class ArcherGame extends Base_Scene {
 
         this.tower = new Element(0, 0, 10, this.materials.tower, 0, 0);
         this.sky = new Element(0, 0, 30, this.materials.sky, 0, -1);
-        this.archer = new Element(-20, 2.5, 5, this.materials.tank, 0, 0);
+        this.archer = new Element(-30, 2.5, 5, this.materials.tank, 0, 0);
         this.target = new Element(20, this.level + 104.5, 5, this.materials.bunker, 0, 0);
         this.ground = new Element(-97, -102.5, 100, this.materials.grass, 0, 0, 1.1, false); 
         this.ground2 = new Element(97, this.level, 100, this.materials.grass, 0, 0, 1.1, false);
@@ -299,6 +303,10 @@ export class ArcherGame extends Base_Scene {
     }
 
     drawObjects(context, program_state) {
+        this.shapes.square.draw(context, program_state,
+            Mat4.identity()
+            .times(Mat4.translation(0, -40, -1))
+            .times(Mat4.scale(80, 80, 1)), this.materials.background);
 //         this.shapes.sky.draw(context, program_state, ...this.sky.update(context, program_state));
         this.shapes.tower.draw(context, program_state, 
             Mat4.identity().times(Mat4.scale(3, 10, 1)).times(Mat4.translation(0, 0.75, 0))
@@ -339,7 +347,7 @@ export class ArcherGame extends Base_Scene {
         if (this.exploding) {
             for (let i = 0; i < NUM_PARTICLES; i++) {
                 const particle_transform = Mat4.identity()
-                .times(Mat4.translation(this.projectile.x + (Math.random()*(20)-10), this.projectile.y + (Math.random()*(20)-10), 0));
+                .times(Mat4.translation(this.projectile.x + (Math.random()*(10)-5), this.projectile.y + (Math.random()*(10)-5), 1));
                 this.shapes.particle.draw(context, program_state, particle_transform, this.materials.particle);
             }
         }

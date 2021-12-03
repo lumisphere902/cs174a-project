@@ -144,22 +144,17 @@ class Element {
             this.dy -= .00861
         }
 
+        //alter x and y based on wind and direction
         if (this.wind_direction == "West"){
-            //console.log("this is going west");
             this.dx -= 0.001 * this.wind;
         } else if (this.wind_direction == "East"){
-            //console.log("this is going East");
             this.dx += 0.001 * this.wind;
         }
         this.x += this.dx;
-        //alter x and y based on wind and direction
-        //this will make it change every frame which isn't right 
-       
+        
         if (this.wind_direction == "North"){
             this.dy += 0.001 * this.wind;
-            //console.log("this is going North");
         } else if (this.wind_direction == "South"){
-            //console.log("this is going South");
             this.dy -= 0.001 * this.wind;
         }
         this.y += this.dy;
@@ -184,8 +179,7 @@ export class ArcherGame extends Base_Scene {
         this.key_triggered_button("Increase angle", ["l"], () => {this.angle = Math.min(180, this.angle + 1)});
         this.key_triggered_button("Decrease speed", ["u"], () => {this.speed = Math.max(20, this.speed - 1)});
         this.key_triggered_button("Increase speed", ["o"], () => {this.speed = Math.min(120, this.speed + 1)});
-        //this.key_triggered_button("Successful hit (debug)", ["q"], this.successful_hit);
-        //this.key_triggered_button("Failed hit (debug)", ["f"], this.failed_hit);
+
     }
 
 

@@ -184,14 +184,15 @@ export class ArcherGame extends Base_Scene {
         this.key_triggered_button("Increase angle", ["l"], () => {this.angle = Math.min(180, this.angle + 1)});
         this.key_triggered_button("Decrease speed", ["u"], () => {this.speed = Math.max(20, this.speed - 1)});
         this.key_triggered_button("Increase speed", ["o"], () => {this.speed = Math.min(120, this.speed + 1)});
-        this.key_triggered_button("Successful hit (debug)", ["q"], this.successful_hit);
-        this.key_triggered_button("Failed hit (debug)", ["f"], this.failed_hit);
+        //this.key_triggered_button("Successful hit (debug)", ["q"], this.successful_hit);
+        //this.key_triggered_button("Failed hit (debug)", ["f"], this.failed_hit);
     }
 
 
     init() {
         this.score = 0;
         this.lives = 3;
+        this.high_score = 0;
         this.wind_strength1 = Math.floor(Math.random() * 5);
         this.direction = Math.floor(Math.random() * 4) + 1;
         
@@ -253,7 +254,12 @@ export class ArcherGame extends Base_Scene {
     }
 
     game_over() {
-        window.alert(`Game over! Your score was ${this.score}`);
+        if (this.score > this.high_score){
+            this.high_score = this.score;
+            window.alert(`Game over! New high score: ${this.high_score}`);
+        } else {
+            window.alert(`Game over! Your score was ${this.score}. Previous high score: ${this.high_score}`);
+        }
         window.location.reload();
     }
 
